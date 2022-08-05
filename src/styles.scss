@@ -1,0 +1,17 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+body {
+    background-color: black;
+};
+p {
+    color: white;
+    font-style: oblique;
+};
+h1 {
+    color: white;
+    font-style: oblique;
+};
+div{
+    text-align: center;
+};

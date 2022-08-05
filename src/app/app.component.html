@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div><h1>Color Guessr</h1></div>
+    <div><h3 id="guesses" style="color: red; font-style: oblique;">Guesses: 0</h3></div>
+    <br>
+    <br>
+    <div>
+      <canvas id="myCanvas" width="1000" height="500"
+      style="border:1px solid white;">
+      </canvas>
+      <br><br><br>
+      <form id="guessForm" (submit) = "onSubmit($event)">
+        <label for="red" style="color: red;">R: </label>
+        <input type="number" id="red" name="red" min="0" max="255"><br><br>
+        <label for="green" style="color: green;">G: </label>
+        <input type="number" id="green" name="green" min="0" max="255"><br><br>
+        <label for="blue" style="color: blue;">B: </label>
+        <input type="number" id="blue" name="blue" min="0" max="255"><br><br>
+        <input type="submit" value="Guess!">
+      </form>
+      <p id="highlow">Red: No guesses. Green: No guesses. Blue: No guesses.</p>
+    </div>
+  </body>
+</html>
