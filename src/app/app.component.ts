@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CheckboxRequiredValidator } from '@angular/forms';
-import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -8,11 +7,13 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  constructor(private http: HttpClient){ }
   title = 'color-guess';
   guesses = -1;
   r = -1;
   g = -1;
   b = -1;
+  playing = false;
   ngOnInit(): void {
     this.guesses = 0;
     let canvas = <HTMLCanvasElement>document.getElementById("myCanvas");
@@ -34,10 +35,15 @@ export class AppComponent {
     let guessB = parseInt((<HTMLInputElement>document.getElementById("blue")).value);
     console.log(`RedGuess: ${guessR}, GreenGuess: ${guessG}, GuessBlue: ${guessB}`);
     this.guesses++;
-    console.log(this.guesses);
     let guessCounter = document.getElementById("guesses");
     if(guessCounter !== null){
       guessCounter.innerHTML = `Guesses: ${this.guesses}`;
+    }
+
+    let table = document.getElementById("rgbGuesses");
+
+    if(table !== null){
+      table.innerHTML += `<tr><td>${guessR}</td><td>${guessG}</td><td>${guessB}</td></tr>`;
     }
 
     let redRes = Math.abs(guessR - this.r);
@@ -50,50 +56,11 @@ export class AppComponent {
 
     let highlow = document.getElementById("highlow");
 
-    if(redField !== null){
-      if(redRes > 100){
-        redField.style.backgroundColor = "red";
-      }
-      else if(redRes <= 100 && redRes > 50){
-        redField.style.backgroundColor = "orange";
-      }
-      else if(redRes <= 50 && redRes > 0){
-        redField.style.backgroundColor = "yellow";
-      }
-      else{
-        redField.style.backgroundColor = "green";
-      }
-    }
+    this.hotOrCold(redField, redRes);
 
-    if(greenField !== null){
-      if(greenRes > 100){
-        greenField.style.backgroundColor = "red";
-      }
-      else if(greenRes <= 100 && greenRes > 50){
-        greenField.style.backgroundColor = "orange";
-      }
-      else if(greenRes <= 50 && greenRes > 0){
-        greenField.style.backgroundColor = "yellow";
-      }
-      else{
-        greenField.style.backgroundColor = "green";
-      }
-    }
+    this.hotOrCold(greenField, greenRes);
 
-    if(blueField !== null){
-      if(blueRes > 100){
-        blueField.style.backgroundColor = "red";
-      }
-      else if(blueRes <= 100 && blueRes > 50){
-        blueField.style.backgroundColor = "orange";
-      }
-      else if(blueRes <= 50 && blueRes > 0){
-        blueField.style.backgroundColor = "yellow";
-      }
-      else{
-        blueField.style.backgroundColor = "green";
-      }
-    }
+    this.hotOrCold(blueField, blueRes);
 
     if(highlow !== null){
       let rhl = "";
@@ -113,9 +80,72 @@ export class AppComponent {
       else bhl = "correct";
 
       highlow.innerHTML = `Red: ${rhl}. Green: ${ghl}. Blue: ${bhl}`;
+
+      if(rhl === "correct" && ghl === "correct" && bhl === "correct"){
+        this.victory(<HTMLInputElement>document.getElementById("red"), <HTMLInputElement>document.getElementById("green"), <HTMLInputElement>document.getElementById("blue"));
+      }
     }
   }
 
-  
+  playAudio(){
+    let mButton = document.getElementById("musicButton");
+    let audio = <HTMLAudioElement>document.getElementById("musicAud");
+    if(mButton !== null && audio !== null){
+      if(!this.playing){
+        mButton.innerHTML = "Turn Music Off";
+        this.playing = true;
+        audio.load();
+        audio.play();
+      }
+      else{
+        mButton.innerHTML = "Turn Music On";
+        this.playing = false;
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    }
+  }
+
+  hotOrCold(entryField: HTMLElement | null, closeness: number){
+    if(entryField !== null){
+      if(closeness > 100){
+        entryField.style.backgroundColor = "red";
+      }
+      else if(closeness <= 100 && closeness > 50){
+        entryField.style.backgroundColor = "orange";
+      }
+      else if(closeness <= 50 && closeness > 0){
+        entryField.style.backgroundColor = "yellow";
+      }
+      else{
+        entryField.style.backgroundColor = "green";
+      }
+    }
+  }
+
+  victory(red: HTMLInputElement, green: HTMLInputElement, blue: HTMLInputElement){
+    let victory = document.getElementById("victory");
+    let colorName = document.getElementById("colorName");
+    let submit = <HTMLInputElement>document.getElementById("sub")
+    if(victory !== null && colorName !== null && submit !== null){
+      victory.innerHTML = "Congrats!"
+      red.disabled = true;
+      green.disabled = true;
+      blue.disabled = true;
+      submit.disabled = true;
+      let url = `https://www.thecolorapi.com/id?rgb=(${red.value},${green.value},${blue.value})`;
+      this.http.get<any>(url).subscribe({
+        next: data => {
+          console.log(data.name.value);
+          if(colorName !== null){
+            colorName.innerHTML = `Your color was: ${data.name.value}`;
+          }
+        },
+        error: error => {
+          console.error('There was an error!', error);
+        }
+      });
+    }
+  }
 
 }
